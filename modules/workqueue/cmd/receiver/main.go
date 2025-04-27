@@ -16,6 +16,7 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/chainguard-dev/clog"
 	"github.com/chainguard-dev/terraform-infra-common/pkg/httpmetrics"
+	"github.com/chainguard-dev/terraform-infra-common/pkg/interceptors"
 	"github.com/sethvargo/go-envconfig"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -46,6 +47,9 @@ func main() {
 	d := duplex.New(
 		env.Port,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.ChainUnaryInterceptor(
+			interceptors.ClogTraceContextUnaryInterceptor,
+		),
 	)
 
 	var wq workqueue.Interface
